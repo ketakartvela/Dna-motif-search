@@ -1,0 +1,29 @@
+#description
+# in this code input contains  k,l,t. k is the length of the kmer we are searching for, l is the lenght of the DNA window, t is the minimum number of times a k-mer must appear inside a window.
+# kmer forms a (L,t)-clump if it appears at least t times inside some DNA window of length L.
+
+from collections import defaultdict  
+def complement(pattern):
+    dic={"A":"T","T":"A","G":"C","C":"G"}
+    string=""
+    for nucleotide in pattern:
+        string+=dic[nucleotide]
+    answer=string[::-1]
+    return answer
+def counting(text,l,k,t):
+    ke=set()
+    
+    
+    for i in range(len(text)-l+1):
+        window=text[i:i+l]
+        mark=defaultdict(int)
+        for j in range(len(window)-k+1):
+            kmer=window[j:j+k]
+            mark[kmer]+=1
+        for  key, value in mark.items():
+            if value>=t:
+                ke.add(key)
+    return ke
+clumps=counting(text,l,k,t)
+for el in clumps:
+    print(el, end=" ")
