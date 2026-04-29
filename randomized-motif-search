@@ -30,10 +30,10 @@ import random
 def random_kmers(Dna,k):
     motifs=[]
     for text in Dna:
-        start=random.randint(0,len(text)-k)
+        start=random.randint(0,len(text)-k) #this method chooses starting index of k-mer randomly
         kmer=text[start:start+k]
         motifs.append(kmer)
-    return motifs
+    return motifs #at the end we have randomized set of motifs from each DNA string
 
 def probability(text,k, matrix):
     navigation={"A":0,"C":1,"G":2,"T":3}
@@ -49,7 +49,7 @@ def probability(text,k, matrix):
         if score>best_score:
             best_score=score
             best_motif=kmer
-    return best_motif
+    return best_motif  #chooses the k-mer in DNA string that best matches the current profile matrix
 
 def concesus(motif):
     k=len(motif[0])
@@ -94,18 +94,18 @@ def randomizedmotifsearch(Dna,k,t):
         
         profile=building_matrix(best_motifs, k)
         for string in Dna:
-            new=probability(string, k, profile)
+            new=probability(string, k, profile) #choosing new k-mer motifs that best match current profile matrix
             new_motifs.append(new)
         s=score(new_motifs)
         if s<score(best_motifs):
             best_motifs=new_motifs
         else:
-            return best_motifs
+            return best_motifs # if score is not improving than we stop and return the best/lowest score output that we have had so far
 def repeated_randomized_motif_search(Dna,k,t,times=1000):
     best_motifs=None
     best_score=float("inf")
     for _ in range(times):
-        motifs=randomizedmotifsearch(Dna, k, t)
+        motifs=randomizedmotifsearch(Dna, k, t) #we are repeated randomized search 1000 times(times=1000),The more random starts we try, the higher the chance that at least one run finds a good motif set
         s=score(motifs)
         if s<best_score:
             best_score=s
