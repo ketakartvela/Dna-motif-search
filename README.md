@@ -10,3 +10,4 @@ The purpose of this project is to practice Python programming in a bioinformatic
 
 - Profile-most probable k-mer search
 - clumps finding problem in DNA
+- randomized motif search(Because Randomized Motif Search starts from randomly selected k-mers, the output may differ between runs. For this reason, this example does not include a fixed expected output file)
