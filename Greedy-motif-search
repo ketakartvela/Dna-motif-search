@@ -1,0 +1,129 @@
+#This algorithm starts with each possible k-mer from the first DNA string. 
+#For each starting k-mer, it builds a profile matrix, then uses that matrix to select the most probable k-mer from the second DNA string.
+#After each new selected k-mer, the profile matrix is updated and used to select the most probable k-mer from the next DNA string. 
+#At the end, the algorithm returns the group of motifs with the lowest score.
+def building_matrix(base,k):
+    profile=[[0]*k for _ in range(4)]
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    denominator=len(base)
+    for kmer in base:
+       for idx, char in enumerate(kmer):
+           row=navigation[char]
+           profile[row][idx]+=1
+    for i in range(len(profile)):
+        for j in range(k):
+            profile[i][j]+=1
+            profile[i][j]/=denominator
+            
+
+    
+    return profile
+# this shows the construction of matrix according to the selected kmers, which in this case is marked as base(list of selected kmers)
+
+
+
+
+
+def concesus(motif):
+    k=len(motif[0])
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    matrix=building_matrix(motif, k)
+    best_string=""
+    for i in range(k):
+        best_index=float("-inf")
+        best_value=None
+        for j in range(len(matrix)):
+            s=matrix[j][i]
+            if s>best_index:
+                best_index=s
+                best_value=j
+        for key, value in navigation.items():
+            if value==best_value:
+                best_string+=key
+    return best_string
+# This function builds the consensus sequence from a given list of motifs.
+# It first creates a profile matrix from the motifs, then chooses the nucleotide
+# with the highest frequency/probability at each position.
+    
+                
+def hamming_distance(a,b):
+    d=0
+    for idx in range(len(a)):
+        if a[idx]!=b[idx]:
+            d+=1
+    return d
+# Hamming distance calculates how many positions differ between two DNA sequences of the same length.
+    
+    
+
+
+
+def score(motif):
+    best_motif=concesus(motif)
+    score=0
+    for el in motif:
+        d=hamming_distance(el, best_motif)
+        score+=d
+    return score
+        
+# This function evaluates a group of selected motifs.
+# It first builds the consensus sequence, then compares every motif to this consensus
+# using Hamming distance. The total number of differences is the score.
+# A lower score means the motifs are more similar and therefore better.
+    
+
+
+
+
+
+def probability(text,k, matrix):
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    best_score=float("-inf")
+    best_motif=None
+    for i in range(len(text)-k+1):
+        kmer=text[i:i+k]
+        score=1
+        for idx, char in enumerate(kmer):
+            row=navigation[char]
+            column=idx
+            score*=matrix[row][column]
+        if score>best_score:
+            best_score=score
+            best_motif=kmer
+    return best_motif
+#chooses the most probable kmer in the DNA string according to the constructed matrix
+
+def greedysearch(Dna,k,t):
+    best_motifs=[]
+    motifs=[]
+    profile=[[0]*k for _ in range(4)]
+    for DNA_string in Dna:
+        for i in range(len(DNA_string)-k+1):
+            first_motif=DNA_string[i:i+k]
+            best_motifs.append(first_motif)
+            break
+    first_string=Dna[0]
+    
+    for i in range(1,len(first_string)-k+1):
+        motifs=[]
+        variant=first_string[i:i+k]
+        motifs.append(variant)
+        
+        for j in range(1,t):
+            profile=building_matrix(motifs, k)
+            best_motif=probability(Dna[j],k,profile)
+            motifs.append(best_motif)
+        if score(motifs)<score(best_motifs):
+            best_motifs=motifs
+        
+    return best_motifs
+# After testing different starting k-mers from the first DNA string,
+# we keep the motif set with the lowest score.
+# A lower score means the selected motifs are more similar to each other.
+with open(r"input/greedy_search.input.txt","r") as f:
+    lines=f.read().strip().split()
+    k,t=map(int,lines[:2])
+    Dna=lines[2:]
+a=greedysearch(Dna, k, t)
+for el in a:
+    print(el, end=" ")
