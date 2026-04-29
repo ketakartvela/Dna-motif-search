@@ -9,3 +9,4 @@ The purpose of this project is to practice Python programming in a bioinformatic
 ## Algorithms included
 
 - Profile-most probable k-mer search
+- clumps finding problem in DNA
