@@ -1,0 +1,120 @@
+#this algorithm unlike greedy search randomly chooses one k-mer from each DNA_string
+# builds profile matrix out of this random motifs
+# for each DNA_string chooses the most probable k-mer according to that profile
+# this gives us the new_set of motifs 
+# if  new motifs have a better/lower score, we are continuing this process of building new profile matrix and new set of motifs
+# if the score does not improve, we stop and return the best motifs found 
+# we repeat this randomized search many times and keep the best result overall
+
+def building_matrix(base,k):
+    profile=[[0]*k for _ in range(4)]
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    denominator=len(base)+4
+    for kmer in base:
+       for idx, char in enumerate(kmer):
+           row=navigation[char]
+           profile[row][idx]+=1
+    for i in range(len(profile)):
+        for j in range(k):
+            profile[i][j]+=1
+            profile[i][j]/=denominator
+            
+
+    
+    return profile
+
+
+
+
+import random
+def random_kmers(Dna,k):
+    motifs=[]
+    for text in Dna:
+        start=random.randint(0,len(text)-k)
+        kmer=text[start:start+k]
+        motifs.append(kmer)
+    return motifs
+
+def probability(text,k, matrix):
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    best_score=float("-inf")
+    best_motif=None
+    for i in range(len(text)-k+1):
+        kmer=text[i:i+k]
+        score=1
+        for idx, char in enumerate(kmer):
+            row=navigation[char]
+            column=idx
+            score*=matrix[row][column]
+        if score>best_score:
+            best_score=score
+            best_motif=kmer
+    return best_motif
+
+def concesus(motif):
+    k=len(motif[0])
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    matrix=building_matrix(motif, k)
+    best_string=""
+    for i in range(k):
+        best_index=float("-inf")
+        best_value=None
+        for j in range(len(matrix)):
+            s=matrix[j][i]
+            if s>best_index:
+                best_index=s
+                best_value=j
+        for key, value in navigation.items():
+            if value==best_value:
+                best_string+=key
+    return best_string
+
+def hamming_distance(a,b):
+    d=0
+    for idx in range(len(a)):
+        if a[idx]!=b[idx]:
+            d+=1
+    return d
+
+def score(motif):
+    best_motif=concesus(motif)
+    score=0
+    for el in motif:
+        d=hamming_distance(el, best_motif)
+        score+=d
+    return score
+        
+        
+            
+def randomizedmotifsearch(Dna,k,t):
+    best_motifs=random_kmers(Dna, k)
+    
+    while  True:
+        new_motifs=[]
+        
+        profile=building_matrix(best_motifs, k)
+        for string in Dna:
+            new=probability(string, k, profile)
+            new_motifs.append(new)
+        s=score(new_motifs)
+        if s<score(best_motifs):
+            best_motifs=new_motifs
+        else:
+            return best_motifs
+def repeated_randomized_motif_search(Dna,k,t,times=1000):
+    best_motifs=None
+    best_score=float("inf")
+    for _ in range(times):
+        motifs=randomizedmotifsearch(Dna, k, t)
+        s=score(motifs)
+        if s<best_score:
+            best_score=s
+            best_motifs=motifs[:]
+    return best_motifs
+with open(r"random_dataset.txt","r") as f:
+    lines=f.read().strip().split()
+    k,t=map(int,lines[:2])
+    Dna=lines[2:]        
+x=repeated_randomized_motif_search(Dna, k, t,1000)  
+for el in x:
+   print(el, end=" ")  
