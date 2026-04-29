@@ -84,14 +84,14 @@ def gibbssampler(Dna,k,t,N):
     best_motifs=motifs[:]
     for _ in range(N):
         motifs_new=motifs[:]
-        x=random.randint(0,t-1)
+        x=random.randint(0,t-1) #we choose randomly which DNA string's motif should be excluded from building profile matrix out of selected k-mers)
         y=motifs_new[x]
-        motifs_new.pop(x)
-        profile=building_matrix(motifs_new, k)
-        motif_modificated=profile_random_kmer(profile,k,Dna[x])
-        motifs_new.insert(x,motif_modificated)
+        motifs_new.pop(x) #we exclude random motif from set of selected motifs
+        profile=building_matrix(motifs_new, k) # we build matrix from the remained set of matrix
+        motif_modificated=profile_random_kmer(profile,k,Dna[x]) #now we choose new motif from the DNA string which was excluded before randomly, and the new  motif should be chosen according the profile matrix we just built. 
+        motifs_new.insert(x,motif_modificated) # We insert back the motif from DNA string that we have excluded before but now we add the new motif 
         motifs=motifs_new
-        if score(motifs_new)<score(best_motifs):
+        if score(motifs_new)<score(best_motifs): # we compare  motif sets and choose the one with the lowest score.
             best_motifs=motifs_new
     return best_motifs
 
