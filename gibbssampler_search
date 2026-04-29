@@ -1,0 +1,112 @@
+# as in randomizedsearch we use random_kmers(Dna,k), so we choose random k-mers from all given Dna strings
+# we choose randomly one Dna strings
+# we build a profile matrix from the remaining motifs
+# we use built profile matrix to choose new-kmer from the removed DNA string
+# put the new k-mer back
+# we are calculating the score of a new motif set and if it has better/lower score, we save it
+
+def concesus(motif):
+    k=len(motif[0])
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    matrix=building_matrix(motif, k)
+    best_string=""
+    for i in range(k):
+        best_index=float("-inf")
+        best_value=None
+        for j in range(len(matrix)):
+            s=matrix[j][i]
+            if s>best_index:
+                best_index=s
+                best_value=j
+        for key, value in navigation.items():
+            if value==best_value:
+                best_string+=key
+    return best_string
+
+def hamming_distance(a,b):
+    d=0
+    for idx in range(len(a)):
+        if a[idx]!=b[idx]:
+            d+=1
+    return d
+
+def score(motif):
+    best_motif=concesus(motif)
+    score=0
+    for el in motif:
+        d=hamming_distance(el, best_motif)
+        score+=d
+    return score
+def profile_random_kmer(matrix,k,text):
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    
+    probs=[]
+    kmers=[]
+    for i in range(len(text)-k+1):
+        kmer=text[i:i+k]
+        prob=1
+        for idx, char in enumerate(kmer):
+            row=navigation[char]
+            prob*=matrix[row][idx]
+        kmers.append(kmer)
+        probs.append(prob)
+    total=sum(probs)
+    probs=[e/total for e in probs]
+    return random.choices(kmers,weights=probs,k=1)[0]
+    
+        
+        
+            
+        
+def building_matrix(base,k):
+    profile=[[0]*k for _ in range(4)]
+    navigation={"A":0,"C":1,"G":2,"T":3}
+    denominator=len(base)+4
+    for kmer in base:
+       for idx, char in enumerate(kmer):
+           row=navigation[char]
+           profile[row][idx]+=1
+    for i in range(len(profile)):
+        for j in range(k):
+            profile[i][j]+=1
+            profile[i][j]/=denominator
+    return profile
+import random
+def random_kmers(Dna,k):
+    motifs=[]
+    for text in Dna:
+        start=random.randint(0,len(text)-k)
+        kmer=text[start:start+k]
+        motifs.append(kmer)
+    return motifs
+def gibbssampler(Dna,k,t,N):
+    motifs=random_kmers(Dna,k)
+    best_motifs=motifs[:]
+    for _ in range(N):
+        motifs_new=motifs[:]
+        x=random.randint(0,t-1)
+        y=motifs_new[x]
+        motifs_new.pop(x)
+        profile=building_matrix(motifs_new, k)
+        motif_modificated=profile_random_kmer(profile,k,Dna[x])
+        motifs_new.insert(x,motif_modificated)
+        motifs=motifs_new
+        if score(motifs_new)<score(best_motifs):
+            best_motifs=motifs_new
+    return best_motifs
+
+with open(r"gibbssampler.txt","r") as f:
+    lines=f.read().strip().split()
+    k,t,N=map(int,lines[:3])
+    Dna=lines[3:] 
+
+a=gibbssampler(Dna, k, t, N)
+for el in a:
+    print(el, end=" ")   
+
+
+
+
+
+
+
