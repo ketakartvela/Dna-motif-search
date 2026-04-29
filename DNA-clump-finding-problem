@@ -1,6 +1,10 @@
 #description
 # in this code input contains  k,l,t. k is the length of the kmer we are searching for, l is the lenght of the DNA window, t is the minimum number of times a k-mer must appear inside a window.
 # kmer forms a (L,t)-clump if it appears at least t times inside some DNA window of length L.
+with open(r"clump_dataset.txt","r") as f:
+    lines=f.read().strip().split()
+    text=lines[0]
+    k, l, t = map(int, lines[1:4])
 
 from collections import defaultdict  
 def complement(pattern):
